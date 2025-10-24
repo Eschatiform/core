@@ -2663,6 +2663,126 @@ Without a key, you can make 2,000 free calls per day at a rate limit of 60 reque
         },
       },
     },
+    '/admin/fantasy-league': {
+      get: {
+        operationId: generateOperationId('get', '/admin/fantasy-league'),
+        summary: 'GET /admin/fantasy-league',
+        description: 'List all fantasy league players',
+        tags: ['admin'],
+        parameters: [],
+        responses: {
+          200: {
+            description: 'Success',
+            content: {
+              'application/json; charset=utf-8': {
+                schema: {
+                  type: 'array',
+                  items: {
+                    type: 'object',
+                    properties: {
+                      account_id: { type: 'string' },
+                      player_name: { type: 'string' },
+                      added_at: { type: 'string', format: 'date-time' },
+                      notes: { type: 'string' }
+                    }
+                  }
+                },
+              },
+            },
+          },
+        },
+        route: () => '/admin/fantasy-league',
+        func: async (req, res, next) => {
+          const { getFantasyLeaguePlayers } = await import('../api/responses/AdminFantasyLeagueResponse.ts');
+          return getFantasyLeaguePlayers(req, res, next);
+        },
+      },
+      post: {
+        operationId: generateOperationId('post', '/admin/fantasy-league'),
+        summary: 'POST /admin/fantasy-league',
+        description: 'Add players to fantasy league',
+        tags: ['admin'],
+        parameters: [],
+        requestBody: {
+          required: true,
+          content: {
+            'application/json': {
+              schema: {
+                type: 'object',
+                required: ['account_ids'],
+                properties: {
+                  account_ids: {
+                    type: 'array',
+                    items: { type: 'string' },
+                    description: 'Array of Steam account IDs'
+                  },
+                  player_name: { type: 'string', description: 'Optional player name' },
+                  notes: { type: 'string', description: 'Optional notes' }
+                }
+              }
+            }
+          }
+        },
+        responses: {
+          200: {
+            description: 'Success',
+            content: {
+              'application/json; charset=utf-8': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    added: { type: 'number' },
+                    skipped: { type: 'number' }
+                  }
+                },
+              },
+            },
+          },
+        },
+        route: () => '/admin/fantasy-league',
+        func: async (req, res, next) => {
+          const { addFantasyLeaguePlayersHandler } = await import('../api/responses/AdminFantasyLeagueResponse.ts');
+          return addFantasyLeaguePlayersHandler(req, res, next);
+        },
+      },
+    },
+    '/admin/fantasy-league/{account_id}': {
+      delete: {
+        operationId: generateOperationId('delete', '/admin/fantasy-league/{account_id}'),
+        summary: 'DELETE /admin/fantasy-league/{account_id}',
+        description: 'Remove player from fantasy league',
+        tags: ['admin'],
+        parameters: [
+          {
+            name: 'account_id',
+            in: 'path',
+            required: true,
+            schema: { type: 'string' },
+            description: 'Steam account ID to remove'
+          }
+        ],
+        responses: {
+          200: {
+            description: 'Success',
+            content: {
+              'application/json; charset=utf-8': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    success: { type: 'boolean' }
+                  }
+                },
+              },
+            },
+          },
+        },
+        route: () => '/admin/fantasy-league/{:account_id}',
+        func: async (req, res, next) => {
+          const { removeFantasyLeaguePlayerHandler } = await import('../api/responses/AdminFantasyLeagueResponse.ts');
+          return removeFantasyLeaguePlayerHandler(req, res, next);
+        },
+      },
+    },
   },
 };
 export default spec;

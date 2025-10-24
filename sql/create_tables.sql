@@ -177,6 +177,14 @@ CREATE INDEX IF NOT EXISTS players_personaname_idx_gin ON players USING GIN(pers
 CREATE INDEX IF NOT EXISTS players_personaname_idx_gist ON players USING GIST(personaname gist_trgm_ops);
 CREATE INDEX IF NOT EXISTS players_full_history_time_idx ON players(full_history_time ASC NULLS FIRST);
 
+CREATE TABLE IF NOT EXISTS fantasy_league_players (
+  account_id bigint PRIMARY KEY,
+  player_name varchar(255),
+  added_at timestamp with time zone DEFAULT NOW(),
+  notes text
+);
+CREATE INDEX IF NOT EXISTS fantasy_league_players_account_id_idx ON fantasy_league_players(account_id);
+
 CREATE TABLE IF NOT EXISTS player_ratings (
   PRIMARY KEY(account_id, time),
   account_id bigint,

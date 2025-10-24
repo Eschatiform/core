@@ -2,6 +2,7 @@
 import config from '../config.ts';
 import redis from './store/redis.ts';
 import { insertMatch } from './util/insert.ts';
+import { isFantasyLeagueMatch } from './util/fantasyLeague.ts';
 import {
   SteamAPIUrls,
   getApiHosts,
@@ -67,6 +68,12 @@ runInLoop(async function scanApi() {
       if (match.match_id % 100 >= Number(config.SCANNER_PERCENT)) {
         return;
       }
+      
+      // Filter matches to only process those with fantasy league players
+      if (!(await isFantasyLeagueMatch(match.players))) {
+        return;
+      }
+      
       // check if match was previously processed
       const result = await redis.zscore('scanner_insert', match.match_id);
       // console.log(match.match_id, result);

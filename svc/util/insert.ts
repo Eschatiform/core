@@ -28,6 +28,7 @@ import {
   isRecentlyVisited,
 } from './queries.ts';
 import { getPGroup } from './pgroup.ts';
+import { isFantasyLeagueMatch } from './fantasyLeague.ts';
 import { blobArchive } from '../store/archive.ts';
 import cassandra, { getCassandraColumns } from '../store/cassandra.ts';
 import { computeMatchData } from './compute.ts';
@@ -644,21 +645,16 @@ export async function insertMatch(
     if (!(options.origin === 'scanner' && options.type === 'api')) {
       return null;
     }
-    // determine if any player in the match is tracked
-    const trackedScores = await Promise.all(
-      match.players.map((p) => {
-        return redis.zscore('tracked', String(p.account_id));
-      }),
-    );
-    let hasTrackedPlayer = trackedScores.filter(Boolean).length > 0;
-    const doParse = hasTrackedPlayer || ('leagueid' in match && match.leagueid);
+    // determine if any player in the match is in fantasy league
+    const hasFantasyLeaguePlayer = await isFantasyLeagueMatch(match.players);
+    const doParse = hasFantasyLeaguePlayer;
     if (doParse) {
       redisCount('auto_parse');
       let priority = 5;
       if (isProTier) {
         priority = -1;
       }
-      if (hasTrackedPlayer) {
+      if (hasFantasyLeaguePlayer) {
         priority = -2;
       }
       // We might have to retry since it might be too soon for the replay
