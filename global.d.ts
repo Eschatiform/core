@@ -401,7 +401,7 @@ type PathVerbSpec = {
   ) => Promise<any>;
 };
 
-type HttpVerb = 'get' | 'post';
+type HttpVerb = 'get' | 'post' | 'delete';
 type OpenAPISpec = {
   openapi: string;
   info: any;
