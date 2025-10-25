@@ -3,7 +3,8 @@ services:
   postgresinit:
     image: postgres
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
     volumes:
       - .:/usr/src
     container_name: odota-postgresinit
@@ -11,12 +12,13 @@ services:
       [
         'bash',
         '-c',
-        'sleep 10 && psql --file /usr/src/sql/init.sql postgres://postgres:postgres@odota-postgres/postgres && psql --file /usr/src/sql/create_tables.sql postgres://postgres:postgres@odota-postgres/yasp',
+        'sleep 15 && psql --file /usr/src/sql/init.sql postgres://postgres:postgres@odota-postgres/postgres && psql --file /usr/src/sql/create_tables.sql postgres://postgres:postgres@odota-postgres/yasp',
       ]
   cassandrainit:
     image: cassandra
     depends_on:
-      - cassandra
+      cassandra:
+        condition: service_started
     volumes:
       - .:/usr/src
     container_name: odota-cassandrainit
@@ -24,20 +26,23 @@ services:
       [
         'bash',
         '-c',
-        'sleep 45 && cqlsh -f /usr/src/sql/init.cql odota-cassandra && cqlsh -f /usr/src/sql/create_tables.cql -k yasp odota-cassandra',
+        'sleep 60 && cqlsh -f /usr/src/sql/init.cql odota-cassandra && cqlsh -f /usr/src/sql/create_tables.cql -k yasp odota-cassandra',
       ]
   minioinit:
     image: minio/mc
     depends_on:
-      - minio
+      minio:
+        condition: service_started
     volumes:
       - .:/usr/src
     container_name: odota-minioinit
     entrypoint: >
       /bin/sh -c "
-      /usr/bin/mc mb opendota-blobs;
-      /usr/bin/mc mb opendota;
-      /usr/bin/mc mb opendota-players;
+      sleep 10;
+      /usr/bin/mc config host add myminio http://odota-minio:9000 minioadmin minioadmin;
+      /usr/bin/mc mb myminio/opendota-blobs;
+      /usr/bin/mc mb myminio/opendota;
+      /usr/bin/mc mb myminio/opendota-players;
       exit 0;
       "
   core:
