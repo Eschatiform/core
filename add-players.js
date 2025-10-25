@@ -16,7 +16,9 @@ async function addFantasyPlayers() {
     port: 5432,
     user: 'postgres',
     password: 'postgres',
-    database: 'yasp'
+    database: 'yasp',
+    // Try IPv4 instead of IPv6
+    family: 4
   });
 
   try {

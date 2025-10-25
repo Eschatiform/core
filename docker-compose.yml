@@ -2,6 +2,8 @@ services:
   postgres:
     image: postgres:9.5
     container_name: odota-postgres
+    ports:
+      - "5432:5432"
     environment:
       POSTGRES_PASSWORD: postgres
   cassandra:
