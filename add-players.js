@@ -1,4 +1,4 @@
-const { Client } = require('pg');
+import { Client } from 'pg';
 
 const players = [
   { id: 125810080, name: 'Player 1' },
