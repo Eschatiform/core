@@ -54,7 +54,7 @@ export async function getFantasyLeaguePlayers(): Promise<Set<string>> {
  * @param players Array of player objects with account_id property
  * @returns true if any player should be tracked, false otherwise
  */
-export async function isFantasyLeagueMatch(players: Array<{ account_id: number | string }>): Promise<boolean> {
+export async function isFantasyLeagueMatch(players: Array<{ account_id?: number | string }>): Promise<boolean> {
   const fantasyPlayers = await getFantasyLeaguePlayers();
   
   // If no fantasy league players configured, don't process any matches
@@ -117,7 +117,7 @@ export async function addFantasyLeaguePlayers(
         notes: notes
       });
       added++;
-    } catch (error) {
+    } catch (error: any) {
       // Skip if already exists (duplicate key)
       if (error.code === '23505') {
         skipped++;
@@ -140,7 +140,7 @@ export async function addFantasyLeaguePlayers(
  */
 export async function removeFantasyLeaguePlayer(accountId: string): Promise<boolean> {
   const result = await db('fantasy_league_players')
-    .where('account_id', BigInt(accountId))
+    .where('account_id', accountId)
     .del();
 
   // Clear cache to force reload

@@ -2,7 +2,7 @@
  * Admin Fantasy League API Response Handlers
  * Handles CRUD operations for fantasy league players
  */
-import { Request, Response, NextFunction } from 'express';
+import type { Request, Response, NextFunction } from 'express';
 import config from '../../../config.ts';
 import { 
   getAllFantasyLeaguePlayers, 

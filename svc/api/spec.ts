@@ -2702,27 +2702,26 @@ Without a key, you can make 2,000 free calls per day at a rate limit of 60 reque
         summary: 'POST /admin/fantasy-league',
         description: 'Add players to fantasy league',
         tags: ['admin'],
-        parameters: [],
-        requestBody: {
-          required: true,
-          content: {
-            'application/json': {
-              schema: {
-                type: 'object',
-                required: ['account_ids'],
-                properties: {
-                  account_ids: {
-                    type: 'array',
-                    items: { type: 'string' },
-                    description: 'Array of Steam account IDs'
-                  },
-                  player_name: { type: 'string', description: 'Optional player name' },
-                  notes: { type: 'string', description: 'Optional notes' }
-                }
+        parameters: [
+          {
+            name: 'body',
+            in: 'body',
+            required: true,
+            schema: {
+              type: 'object',
+              required: ['account_ids'],
+              properties: {
+                account_ids: {
+                  type: 'array',
+                  items: { type: 'string' },
+                  description: 'Array of Steam account IDs'
+                },
+                player_name: { type: 'string', description: 'Optional player name' },
+                notes: { type: 'string', description: 'Optional notes' }
               }
             }
           }
-        },
+        ],
         responses: {
           200: {
             description: 'Success',
@@ -2740,7 +2739,7 @@ Without a key, you can make 2,000 free calls per day at a rate limit of 60 reque
           },
         },
         route: () => '/admin/fantasy-league',
-        func: async (req, res, next) => {
+        func: async (req: any, res: any, next: any) => {
           const { addFantasyLeaguePlayersHandler } = await import('../api/responses/AdminFantasyLeagueResponse.ts');
           return addFantasyLeaguePlayersHandler(req, res, next);
         },
@@ -2777,7 +2776,7 @@ Without a key, you can make 2,000 free calls per day at a rate limit of 60 reque
           },
         },
         route: () => '/admin/fantasy-league/{:account_id}',
-        func: async (req, res, next) => {
+        func: async (req: any, res: any, next: any) => {
           const { removeFantasyLeaguePlayerHandler } = await import('../api/responses/AdminFantasyLeagueResponse.ts');
           return removeFantasyLeaguePlayerHandler(req, res, next);
         },
