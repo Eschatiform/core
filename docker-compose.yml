@@ -17,7 +17,7 @@ services:
     image: redis:7
     container_name: odota-redis
   elasticsearch:
-    image: elasticsearch:8.11
+    image: elasticsearch:latest
     container_name: odota-elasticsearch
     environment:
       - cluster.name=docker-cluster
