@@ -12,7 +12,6 @@ import {
   getAnonymousAccountId,
   convert64to32,
   serialize,
-  isProMatch,
   getLaneFromPosData,
   isRadiant,
   getPatchIndex,
@@ -81,7 +80,7 @@ export async function upsertPlayer(
     return;
   }
   if (indexPlayer) {
-    //@ts-expect-error
+    //@ts-expect-error: elasticsearch client typing for update body differs from our shape
     await es.update({
       index: INDEX,
       type: 'player',
@@ -100,7 +99,9 @@ export async function upsertPlayer(
   });
 }
 
-export async function bulkIndexPlayer(bulkActions: any[]) {
+export async function bulkIndexPlayer(
+  bulkActions: Array<Record<string, unknown>>,
+) {
   // Bulk call to ElasticSearch
   if (bulkActions.length > 0) {
     await es.bulk({
@@ -178,7 +179,7 @@ export async function insertMatch(
   let average_rank: number | undefined = undefined;
   // Only fetch the average_rank if this is a fresh match since otherwise it won't be accurate
   if (options.origin === 'scanner' && options.type === 'api') {
-    const { avg, players } = await getMatchRankTier(match.players);
+    const { avg } = await getMatchRankTier(match.players);
     if (avg) {
       average_rank = avg;
     }
@@ -210,17 +211,7 @@ export async function insertMatch(
       // Only if API or parse data
       return;
     }
-    if (options.type === 'api' && !isProMatch(match as ApiData)) {
-      // Check whether we care about this match for pro purposes
-      // We need the basic match data to run the check, so only do it if type is api
-      // console.log('[UPSERTMATCHPOSTGRES]: skipping due to check');
-      return;
-    }
-    if (!isProTier) {
-      // Skip if not in a pro league (premium or professional tier)
-      console.log('[UPSERTMATCHPOSTGRES]: skipping due to tier');
-      return;
-    }
+    // We already filter to fantasy matches in scanner; always upsert API/parsed matches here
     // If parsed data, we want to make sure the match exists in DB
     // Otherwise we could end up with parsed data only rows for matches we skipped above
     // We might want to switch the upsert to UPDATE instead for parsed case
@@ -408,7 +399,7 @@ export async function insertMatch(
     // Currently this means fullhistory could overwrite the blob later and we could lose some data
     // Implement "ifNotExists" behavior if we need to avoid overwriting
 
-    let copy = createMatchCopy<typeof match>(match);
+    const copy = createMatchCopy<typeof match>(match);
     await upsertBlob(options.type, copy);
 
     async function upsertBlob(
@@ -485,7 +476,7 @@ export async function insertMatch(
             try {
               // Try deleting the tempfile ince it's now out of date
               await fs.unlink('./cache/' + account_id);
-            } catch (e) {
+            } catch {
               // File didn't exist, ignore
             }
             const isVisitor = await isRecentVisitor(account_id);
@@ -658,7 +649,7 @@ export async function insertMatch(
         priority = -2;
       }
       // We might have to retry since it might be too soon for the replay
-      let attempts = 50;
+      const attempts = 50;
       const job = await addReliableJob(
         {
           name: 'parse',
@@ -722,7 +713,7 @@ export async function upsertPlayerCaches(
           delete playerMatch[key as keyof ParsedPlayerMatch];
         }
       });
-      const serializedMatch: any = serialize(playerMatch);
+      const serializedMatch = serialize(playerMatch) as Record<string, unknown>;
       if (
         (config.NODE_ENV === 'development' || config.NODE_ENV === 'test') &&
         (playerMatch.player_slot === 0 || type === 'reconcile')
@@ -863,7 +854,7 @@ async function updateLastPlayed(match: ApiData) {
       player.account_id && player.account_id !== getAnonymousAccountId(),
   );
   const lastMatchTime = new Date(match.start_time * 1000);
-  const bulkUpdate = filteredPlayers.reduce<any>((acc, player) => {
+  const bulkUpdate = filteredPlayers.reduce<Record<string, unknown>[]>((acc, player) => {
     acc.push(
       {
         update: {
@@ -878,7 +869,7 @@ async function updateLastPlayed(match: ApiData) {
       },
     );
     return acc;
-  }, []);
+  }, [] as Record<string, unknown>[]);
   bulkIndexPlayer(bulkUpdate);
   await Promise.all(
     filteredPlayers.map((player) =>
@@ -944,7 +935,7 @@ async function updateHeroCounts(match: ApiData, isProTier: boolean) {
     tier = 'turbo';
   } else if (isSignificant(match)) {
     tier = 'pub';
-    let { avg } = await getMatchRankTier(match.players);
+    const { avg } = await getMatchRankTier(match.players);
     if (avg) {
       rank = Math.floor(avg / 10);
     }
@@ -1008,12 +999,9 @@ async function updateBenchmarks(match: ApiData) {
       // only do if all players have heroes
       if (p.hero_id) {
         Object.keys(benchmarks).forEach((key) => {
-          const metric = benchmarks[key](match, p);
-          if (
-            metric !== undefined &&
-            metric !== null &&
-            !Number.isNaN(Number(metric))
-          ) {
+      const metricUnknown = benchmarks[key](match, p) as unknown;
+      const metric = Number(metricUnknown as number);
+      if (!Number.isNaN(metric)) {
             const rkey = [
               'benchmarks',
               getStartOfBlockMinutes(
@@ -1023,7 +1011,7 @@ async function updateBenchmarks(match: ApiData) {
               key,
               p.hero_id,
             ].join(':');
-            redis.zadd(rkey, metric, match.match_id);
+        redis.zadd(rkey, metric, match.match_id);
             // expire at time two epochs later (after prev/current cycle)
             const expiretime = getStartOfBlockMinutes(
               Number(config.BENCHMARK_RETENTION_MINUTES),

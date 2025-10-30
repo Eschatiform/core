@@ -131,7 +131,7 @@ async function processFullHistory(job: FullHistoryJob) {
     for (let i = 0; i < keys.length; i++) {
       const match = matchesToProcess[keys[i]];
       const playerSlot = match.players.find(
-        (p) => p.account_id === player.account_id,
+        (p: any) => p.account_id === player.account_id,
       )?.player_slot;
       if (playerSlot == null) {
         continue;

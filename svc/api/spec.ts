@@ -239,6 +239,69 @@ Without a key, you can make 2,000 free calls per day at a rate limit of 60 reque
         },
       },
     },
+    '/matches/{match_id}/fantasy': {
+      get: {
+        operationId: generateOperationId('get', '/matches/{match_id}/fantasy'),
+        summary: 'GET /matches/{match_id}/fantasy',
+        description:
+          'Per-player fantasy points and key stats for a match (mirrors OpenDota UI formula).',
+        tags: ['matches'],
+        parameters: [{ $ref: '#/components/parameters/matchIdParam' }],
+        responses: {
+          200: {
+            description: 'Success',
+            content: {
+              'application/json; charset=utf-8': {
+                schema: {
+                  type: 'array',
+                  items: {
+                    type: 'object',
+                    additionalProperties: true,
+                  },
+                },
+              },
+            },
+          },
+        },
+        route: () => '/matches/:match_id/fantasy',
+        func: async (req, res, next) => {
+          const matchId = Number(req.params.match_id);
+          try {
+            const result = await db.raw(
+              `
+              SELECT
+                pm.player_slot,
+                pm.account_id,
+                COALESCE(flp.player_name, p.personaname, '') AS player_name,
+                pm.hero_id,
+                pm.kills, pm.deaths, pm.assists,
+                pm.last_hits AS lh, pm.denies AS dn,
+                pm.gold_per_min AS gpm, pm.xp_per_min AS xpm,
+                pm.towers_killed AS towers, pm.roshans_killed AS roshan,
+                pm.teamfight_participation AS participation,
+                COALESCE(pm.obs_placed, pm.observers_placed) AS observers,
+                pm.camps_stacked AS stacks,
+                pm.rune_pickups AS runes,
+                pm.firstblood_claimed AS first_blood,
+                pm.stuns,
+                fpu.fantasy_points
+              FROM player_matches pm
+              JOIN fantasy_points fpu
+                ON fpu.match_id = pm.match_id AND fpu.player_slot = pm.player_slot
+              LEFT JOIN fantasy_league_players flp ON flp.account_id = pm.account_id
+              LEFT JOIN players p ON p.account_id = pm.account_id
+              WHERE pm.match_id = ?
+              ORDER BY pm.player_slot
+              `,
+              [matchId],
+            );
+            return res.json(result.rows);
+          } catch (err) {
+            return next(err);
+          }
+        },
+      },
+    },
     '/players/{account_id}': {
       get: {
         operationId: generateOperationId('get', '/players/{account_id}'),

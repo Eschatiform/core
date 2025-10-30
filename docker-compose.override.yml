@@ -37,14 +37,20 @@ services:
       - .:/usr/src
     container_name: odota-minioinit
     entrypoint: >
-      /bin/sh -c "
-      sleep 10;
-      /usr/bin/mc config host add myminio http://odota-minio:9000 minioadmin minioadmin;
-      /usr/bin/mc mb myminio/opendota-blobs;
-      /usr/bin/mc mb myminio/opendota;
-      /usr/bin/mc mb myminio/opendota-players;
+      /bin/sh -c '
+      set -e;
+      tries=0;
+      until /usr/bin/mc alias set myminio http://odota-minio:9000 minioadmin minioadmin >/dev/null 2>&1 && /usr/bin/mc ls myminio >/dev/null 2>&1; do
+        tries=$$((tries+1));
+        if [ $$tries -gt 30 ]; then echo "MinIO not ready"; exit 1; fi;
+        echo "Waiting for MinIO (S3 API :9000)..."; sleep 2;
+      done;
+      /usr/bin/mc mb myminio/opendota-blobs   >/dev/null 2>&1 || true;
+      /usr/bin/mc mb myminio/opendota         >/dev/null 2>&1 || true;
+      /usr/bin/mc mb myminio/opendota-players >/dev/null 2>&1 || true;
+      /usr/bin/mc ls myminio;
       exit 0;
-      "
+      '
   core:
     entrypoint: bash launch.sh
     volumes:

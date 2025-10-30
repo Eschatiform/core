@@ -1,0 +1,131 @@
+{
+  "match_id": 8535900984,
+  "players": [
+    {
+      "account_id": 125810080,
+      "player_slot": 0,
+      "party_id": 0,
+      "permanent_buffs": [
+        {
+          "permanent_buff": 12,
+          "stack_count": 0,
+          "grant_time": 3207
+        }
+      ],
+      "party_size": 3
+    },
+    {
+      "account_id": 288497982,
+      "player_slot": 1,
+      "party_id": 0,
+      "permanent_buffs": [],
+      "party_size": 3
+    },
+    {
+      "account_id": 36336287,
+      "player_slot": 2,
+      "party_id": 0,
+      "permanent_buffs": [
+        {
+          "permanent_buff": 4,
+          "stack_count": 20,
+          "grant_time": 127
+        }
+      ],
+      "party_size": 3
+    },
+    {
+      "account_id": 52951278,
+      "player_slot": 3,
+      "party_id": 1,
+      "permanent_buffs": [],
+      "party_size": 2
+    },
+    {
+      "account_id": 120329891,
+      "player_slot": 4,
+      "party_id": 1,
+      "permanent_buffs": [
+        {
+          "permanent_buff": 2,
+          "stack_count": 0,
+          "grant_time": 3433
+        },
+        {
+          "permanent_buff": 12,
+          "stack_count": 0,
+          "grant_time": 3115
+        }
+      ],
+      "party_size": 2
+    },
+    {
+      "account_id": 118543579,
+      "player_slot": 128,
+      "party_id": 2,
+      "permanent_buffs": [
+        {
+          "permanent_buff": 2,
+          "stack_count": 0,
+          "grant_time": 3013
+        },
+        {
+          "permanent_buff": 12,
+          "stack_count": 0,
+          "grant_time": 3091
+        }
+      ],
+      "party_size": 1
+    },
+    {
+      "account_id": 174795651,
+      "player_slot": 129,
+      "party_id": 3,
+      "permanent_buffs": [
+        {
+          "permanent_buff": 12,
+          "stack_count": 0,
+          "grant_time": 1496
+        }
+      ],
+      "party_size": 4
+    },
+    {
+      "account_id": 1255545215,
+      "player_slot": 130,
+      "party_id": 3,
+      "permanent_buffs": [
+        {
+          "permanent_buff": 2,
+          "stack_count": 0,
+          "grant_time": 3283
+        }
+      ],
+      "party_size": 4
+    },
+    {
+      "account_id": 160261013,
+      "player_slot": 131,
+      "party_id": 3,
+      "permanent_buffs": [
+        {
+          "permanent_buff": 12,
+          "stack_count": 0,
+          "grant_time": 2601
+        }
+      ],
+      "party_size": 4
+    },
+    {
+      "account_id": 95540504,
+      "player_slot": 132,
+      "party_id": 3,
+      "permanent_buffs": [],
+      "party_size": 4
+    }
+  ],
+  "series_id": 0,
+  "series_type": 0,
+  "cluster": 273,
+  "replay_salt": 21163747
+}
