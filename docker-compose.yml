@@ -1,18 +1,62 @@
 services:
   postgres:
-    image: postgres:9.5
+    image: postgres:15-alpine
     container_name: odota-postgres
     ports:
       - "5432:5432"
     environment:
       POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: yasp
+      # PostgreSQL configuration for stability
+      POSTGRES_INITDB_ARGS: "--encoding=UTF8 --locale=C"
     volumes:
       - ./database/postgres:/var/lib/postgresql/data
+    # Resource limits to prevent OOM kills
+    deploy:
+      resources:
+        limits:
+          memory: 2G
+          cpus: '1.0'
+        reservations:
+          memory: 512M
+          cpus: '0.25'
+    # For docker-compose v2 compatibility
+    mem_limit: 2g
+    mem_reservation: 512m
+    cpus: 1.0
+    # PostgreSQL tuning for container environment
+    command:
+      - postgres
+      - -c
+      - shared_buffers=256MB
+      - -c
+      - effective_cache_size=1GB
+      - -c
+      - maintenance_work_mem=128MB
+      - -c
+      - checkpoint_completion_target=0.9
+      - -c
+      - wal_buffers=16MB
+      - -c
+      - default_statistics_target=100
+      - -c
+      - random_page_cost=1.1
+      - -c
+      - effective_io_concurrency=200
+      - -c
+      - work_mem=4MB
+      - -c
+      - min_wal_size=1GB
+      - -c
+      - max_wal_size=4GB
+      - -c
+      - max_connections=100
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      test: ["CMD-SHELL", "pg_isready -U postgres -d yasp"]
       interval: 5s
       timeout: 5s
       retries: 5
+      start_period: 10s
   cassandra:
     image: cassandra:5.0
     container_name: odota-cassandra
