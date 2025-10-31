@@ -15,7 +15,7 @@ services:
     image: cassandra:5.0
     container_name: odota-cassandra
     environment:
-      JVM_EXTRA_OPTS: -Dcassandra.skip_wait_for_gossip_to_settle=0
+      JVM_EXTRA_OPTS: -Dcassandra.skip_wait_for_gossip_to_settle=0 -Xms512m -Xmx512m -XX:-UseContainerSupport
   minio:
     ports:
       - "9000:9000"   # S3 API
@@ -34,7 +34,6 @@ services:
     container_name: odota-redis
   elasticsearch:
     image: elasticsearch:7.17.0
-    platform: linux/amd64
     container_name: odota-elasticsearch
     environment:
       - cluster.name=docker-cluster
@@ -42,6 +41,7 @@ services:
       - bootstrap.system_call_filter=false
       - 'ES_JAVA_OPTS=-Xms256m -Xmx256m'
       - discovery.type=single-node
+      - 'JAVA_TOOL_OPTIONS=-XX:+UnlockExperimentalVMOptions -XX:-UseContainerSupport -Dlog4j2.disable.jmx=true'
     ulimits:
       memlock:
         soft: -1
