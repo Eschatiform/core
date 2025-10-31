@@ -18,7 +18,7 @@ services:
     image: cassandra
     depends_on:
       cassandra:
-        condition: service_started
+        condition: service_healthy
     volumes:
       - .:/usr/src
     container_name: odota-cassandrainit
@@ -26,7 +26,7 @@ services:
       [
         'bash',
         '-c',
-        'sleep 60 && cqlsh -f /usr/src/sql/init.cql odota-cassandra && cqlsh -f /usr/src/sql/create_tables.cql -k yasp odota-cassandra',
+        'set -e; tries=0; until cqlsh -e "DESCRIBE KEYSPACES" odota-cassandra >/dev/null 2>&1; do tries=$$((tries+1)); if [ $$tries -gt 60 ]; then echo "Cassandra not ready"; exit 1; fi; echo "Waiting for Cassandra..."; sleep 2; done; cqlsh -f /usr/src/sql/init.cql odota-cassandra && cqlsh -f /usr/src/sql/create_tables.cql -k yasp odota-cassandra',
       ]
   minioinit:
     image: minio/mc
@@ -40,7 +40,7 @@ services:
       /bin/sh -c '
       set -e;
       tries=0;
-      until /usr/bin/mc alias set myminio http://odota-minio:9000 minioadmin minioadmin >/dev/null 2>&1 && /usr/bin/mc ls myminio >/dev/null 2>&1; do
+      until /usr/bin/mc alias set myminio http://odota-minio:9000 minioadmin Hmwybs=9752! >/dev/null 2>&1 && /usr/bin/mc ls myminio >/dev/null 2>&1; do
         tries=$$((tries+1));
         if [ $$tries -gt 30 ]; then echo "MinIO not ready"; exit 1; fi;
         echo "Waiting for MinIO (S3 API :9000)..."; sleep 2;
